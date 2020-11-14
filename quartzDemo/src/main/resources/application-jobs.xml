@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--1.注册自定义Job-->
+    <bean id="jobDemo" class="com.wzw.job.JobDemo"></bean>
+
+    <!--2.创建JobDetail对象,作用是负责通过反射调用指定的Job,注入目标对象,注入目标方法-->
+    <bean id="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <!--注入目标对象:ref中的值h是类中的类名-->
+        <property name="targetObject" ref="jobDemo"/>
+        <!--注入目标方法 :value中的值是类中的方法名-->
+        <property name="targetMethod" value="run"/>
+    </bean>
+
+    <!--3.注册一个触发器,指定任务触发时间-->
+    <bean id="myTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <!--注入JobDetail-->
+        <property name="jobDetail" ref="jobDetail"/>
+        <!--指定触发的事件,基于Cron表达式(0/5表示从0秒开始,每次5秒执行一次)-->
+        <property name="cronExpression">
+            <value>0/5 * * * * ?</value>
+        </property>
+    </bean>
+
+    <!--4.注册一个统一的调度工厂.公共这个调度工厂调度任务-->
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <!--注入多个触发器-->
+        <property name="triggers">
+            <list>
+                <!--bean="触发器id"-->
+                <ref bean="myTrigger"/>
+            </list>
+        </property>
+    </bean>
+
+
+</beans>
